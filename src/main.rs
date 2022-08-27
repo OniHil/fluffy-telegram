@@ -27,9 +27,9 @@ fn main() {
         .insert_resource(CursorState::default())
         .add_startup_system(setup)
         .add_system_to_stage(CoreStage::PreUpdate, change_cursor_state)
-        .add_system_to_stage(CoreStage::Update, mark_moving)
+        .add_system_to_stage(CoreStage::Update, prepare_movement)
+        .add_system_to_stage(CoreStage::PostUpdate, sync_cursor_and_moving)
         .add_system_to_stage(CoreStage::PostUpdate, moving)
-        .add_system_to_stage(CoreStage::PostUpdate, still)
         .add_plugins(DefaultPlugins)
         .run();
 }
@@ -104,7 +104,7 @@ fn cursor_to_screen(window: &Window, cam_transform: &Transform, cursor_pos: Vec2
     Vec2::new(out.x, out.y)
 }*/
 
-fn mark_moving(
+fn prepare_movement(
     mut commands: Commands,
     cursor_state: Res<CursorState>,
     q_movable: Query<Entity, With<Movable>>,
@@ -113,16 +113,36 @@ fn mark_moving(
     // Adds or removes a component that marks an entity for moving.
     if cursor_state.holding {
         // If you're holding then add the "Moving" component to the entity
-        if let Some(entity) = q_movable.iter().next() {
-            commands.entity(entity).remove::<Still>();
-            commands.entity(entity).insert(Moving);
+        // because it's moving we add the cursor as a parent so we can sync thier movement
+        if let Some(movable_entity) = q_movable.iter().next() {
+            commands.entity(movable_entity).insert(Moving);
         }
     } else {
-        // if it isn't remove the "Moving" component from the entity
-        if let Some(entity) = q_moving.iter().next() {
-            commands.entity(entity).remove::<Moving>();
-            commands.entity(entity).insert(Still);
+        if let Some(movable_entity) = q_moving.iter().next() {
+            commands.entity(movable_entity).remove::<Moving>();
+            commands.entity(movable_entity).insert(Still);
         }
+    }
+}
+
+fn sync_cursor_and_moving(
+    mut commands: Commands,
+    q_moving: Query<(Entity), Added<Moving>>,
+    q_still: Query<(Entity, &Parent), (Added<Still>, With<Parent>)>,
+    q_cursor: Query<Entity, With<Cursor>>,
+) {
+    // Adds or removes a component that marks an entity for moving.
+    if let Some(movable_entity) = q_moving.iter().next() {
+        if let Some(cursor_entity) = q_cursor.iter().next() {
+            println!("Added cursor parent");
+            commands.entity(cursor_entity).add_child(movable_entity);
+        }
+    }
+    // if it isn't remove the "Moving" component from the entity
+    if let Some((entity, parent)) = q_still.iter().next() {
+        println!("Removed cursor parent");
+        commands.entity(entity).remove::<Still>();
+        commands.entity(**parent).remove_children(&[entity]);
     }
 }
 
@@ -131,23 +151,16 @@ fn moving(
     mut q_moving: Query<(Entity, &mut Transform, &GlobalTransform), With<Moving>>,
     q_cursor: Query<(Entity, &GlobalTransform), With<Cursor>>,
 ) {
+    // Get the cursor and the movable entities, assign the cursor as the parent of the movable entities
     if let Some((cursor_e, cursor_transform)) = q_cursor.iter().next() {
         for (entity, mut transform, global_transform) in q_moving.iter_mut() {
-            println!("{:?}", transform);
+            // println!("{:?}", transform);
             let global_pos = global_transform.translation() - cursor_transform.translation();
-            println!("{:?}", global_pos);
+            // println!("{:?}", global_pos);
 
-            //commands.entity(cursor_e).push_children(&[entity]);
+            //
             transform.translation.x = global_pos.x;
             transform.translation.y = global_pos.y;
         }
-    }
-}
-
-fn still(mut commands: Commands, mut q_still: Query<(Entity, &Parent), Added<Still>>) {
-    for (entity, parent) in q_still.iter_mut() {
-        println!("{:?}", &entity);
-        commands.entity(**parent).remove_children(&[entity]);
-        commands.entity(entity).remove::<Still>();
     }
 }
