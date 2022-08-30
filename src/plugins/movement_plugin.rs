@@ -31,14 +31,13 @@ struct CursorState {
 }
 
 fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
-    commands.spawn_bundle(Camera2dBundle::default());
     commands
         .spawn()
         .insert_bundle((Transform::default(), GlobalTransform::default(), Cursor));
     commands.insert_resource(CursorState::default());
     commands
         .spawn_bundle(SpriteBundle {
-            texture: asset_server.load("images/map.png"),
+            texture: asset_server.load("map/map.png"),
             transform: Transform {
                 scale: Vec3::splat(0.5),
                 ..default()

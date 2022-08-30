@@ -23,9 +23,15 @@ fn main() {
             mode: WindowMode::BorderlessFullscreen,
             ..default()
         })
-        .add_plugin(plugins::movement_plugin::MovementPlugin)
         .add_plugins(DefaultPlugins)
+        .add_startup_system(setup)
         .add_plugin(LogDiagnosticsPlugin::default())
         .add_plugin(FrameTimeDiagnosticsPlugin::default())
+        .add_plugin(plugins::movement_plugin::MovementPlugin)
+        .add_plugin(plugins::ui_plugin::UIPlugin)
         .run();
+}
+
+fn setup(mut commands: Commands) {
+    commands.spawn_bundle(Camera2dBundle::default());
 }

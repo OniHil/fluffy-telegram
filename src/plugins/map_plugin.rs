@@ -1,8 +1,4 @@
-use bevy::{
-    input::mouse::{MouseMotion, MouseWheel},
-    prelude::*,
-    transform::components::Transform,
-};
+use bevy::{input::mouse::MouseWheel, prelude::*, transform::components::Transform};
 
 pub struct MapPlugin;
 
@@ -24,7 +20,7 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
     });
     commands
         .spawn_bundle(SpriteBundle {
-            texture: asset_server.load("images/map.png"),
+            texture: asset_server.load("map/map.png"),
             transform: Transform {
                 scale: Vec3::splat(0.5),
                 ..default()
@@ -55,14 +51,9 @@ fn grab_mouse(mut windows: ResMut<Windows>, mouse: Res<Input<MouseButton>>) {
 }
 
 fn map_scrolling(
-    mut mouse_motion_events: EventReader<MouseMotion>,
     mut mouse_wheel_events: EventReader<MouseWheel>,
     mut query: Query<&mut Transform, With<MapEntity>>,
 ) {
-    // for event in mouse_motion_events.iter() {
-    //     info!("{:?}", event);
-    // }
-
     for mut map in &mut query {
         for scroll in mouse_wheel_events.iter() {
             map.scale = Vec3::splat(f32::max(scroll.y as f32 + map.scale.max_element(), 0.5));
