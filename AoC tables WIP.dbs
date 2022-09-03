@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<project name="AoC" id="Project-afb" database="PostgreSQL" >
+	<schema name="aoc" >
+		<table name="area" prior="tbl" >
+			<column name="id" type="integer" jt="4" mandatory="y" >
+				<identity><![CDATA[GENERATED AS IDENTITY (INCREMENT BY 1 MINVALUE 0 START WITH 0 )]]></identity>
+			</column>
+			<column name="position" type="bigint[]" jt="2003" mandatory="y" >
+				<comment><![CDATA[Size 3]]></comment>
+			</column>
+			<column name="normal" type="bigint[]" jt="2003" mandatory="y" >
+				<comment><![CDATA[Size 3
+ATTRIBUTE_NORMAL]]></comment>
+			</column>
+			<column name="uv_0" type="bigint[]" jt="2003" mandatory="y" >
+				<comment><![CDATA[Size 2
+ATTRIBUTE_UV_0]]></comment>
+			</column>
+			<index name="pk_area" unique="PRIMARY_KEY" >
+				<column name="id" />
+			</index>
+		</table>
+		<table name="cities" prior="cities_0" >
+			<column name="id" type="integer" jt="4" mandatory="y" >
+				<identity><![CDATA[GENERATED AS IDENTITY (INCREMENT BY 1 MINVALUE 0 START WITH 0 )]]></identity>
+			</column>
+			<column name="name" type="varchar" length="100" jt="12" mandatory="y" />
+			<column name="point" type="point" jt="1111" mandatory="y" />
+			<column name="continent_id" type="integer" jt="4" mandatory="y" />
+			<column name="node_id" type="integer" jt="4" />
+			<index name="pk_cities_0" unique="PRIMARY_KEY" >
+				<column name="id" />
+			</index>
+			<fk name="fk_cities_nodes" to_schema="aoc" to_table="nodes" delete_action="setNull" >
+				<fk_column name="node_id" pk="id" />
+			</fk>
+		</table>
+		<table name="continents" prior="cities" spec="" >
+			<column name="id" type="integer" jt="4" mandatory="y" >
+				<identity><![CDATA[GENERATED AS IDENTITY (INCREMENT BY 1 MINVALUE 0 START WITH 0 )]]></identity>
+			</column>
+			<column name="name" type="varchar" length="100" jt="12" mandatory="y" />
+			<column name="area_id" type="integer" jt="4" />
+			<index name="pk_cities" unique="PRIMARY_KEY" >
+				<column name="id" />
+			</index>
+			<index name="unq_continents_area_id" unique="UNIQUE_KEY" >
+				<column name="area_id" options=" ASC  NULLS LAST " />
+			</index>
+			<fk name="fk_continents_nodes" to_schema="aoc" to_table="area" delete_action="setNull" >
+				<fk_column name="area_id" pk="id" />
+			</fk>
+		</table>
+		<table name="nodes" prior="tbl" >
+			<column name="id" type="integer" jt="4" mandatory="y" >
+				<identity><![CDATA[GENERATED AS IDENTITY (INCREMENT BY 1 MINVALUE 0 START WITH 0 )]]></identity>
+			</column>
+			<column name="name" type="varchar" length="100" jt="12" mandatory="y" />
+			<column name="area_id" type="integer" jt="4" />
+			<column name="level" type="integer" jt="4" />
+			<column name="continent_id" type="integer" jt="4" mandatory="y" />
+			<index name="pk_nodes" unique="PRIMARY_KEY" >
+				<column name="id" />
+			</index>
+			<fk name="fk_nodes_area" to_schema="aoc" to_table="area" delete_action="setNull" >
+				<fk_column name="area_id" pk="id" />
+			</fk>
+			<fk name="fk_nodes_continents" to_schema="aoc" to_table="continents" delete_action="setNull" >
+				<fk_column name="continent_id" pk="id" />
+			</fk>
+		</table>
+		<table name="point_of_interest" prior="point_of_interests" >
+			<column name="id" type="integer" jt="4" mandatory="y" >
+				<identity><![CDATA[GENERATED AS IDENTITY (INCREMENT BY 1 MINVALUE 0 START WITH 0 )]]></identity>
+			</column>
+			<column name="name" type="varchar" length="100" jt="12" mandatory="y" />
+			<column name="point" type="point" jt="1111" mandatory="y" />
+			<column name="note" type="varchar" length="600" jt="12" />
+			<column name="pictures" type="varchar[]" jt="2003" />
+			<column name="icon" type="varchar" jt="12" />
+			<column name="node_id" type="integer" jt="4" />
+			<index name="pk_point_of_interest" unique="PRIMARY_KEY" >
+				<column name="id" />
+			</index>
+			<fk name="fk_point_of_interest_nodes" to_schema="aoc" to_table="nodes" delete_action="setNull" >
+				<fk_column name="node_id" pk="id" />
+			</fk>
+		</table>
+	</schema>
+	<layout name="Default Layout" id="Layout-791" show_relation="columns" >
+		<entity schema="aoc" name="area" color="C1D8EE" x="352" y="480" />
+		<entity schema="aoc" name="cities" color="3986C1" x="976" y="48" />
+		<entity schema="aoc" name="continents" color="C1D8EE" x="48" y="96" />
+		<entity schema="aoc" name="nodes" color="C1D8EE" x="576" y="240" />
+		<entity schema="aoc" name="point_of_interest" color="C1D8EE" x="1008" y="304" />
+	</layout>
+</project>
