@@ -30,8 +30,8 @@ fn main() {
         .add_startup_system(setup)
         .add_plugin(map_plugin::MapPlugin)
         .add_startup_system(load_continent_polygons)
-        .add_plugin(LogDiagnosticsPlugin::default())
-        .add_plugin(FrameTimeDiagnosticsPlugin::default())
+        // .add_plugin(LogDiagnosticsPlugin::default())
+        // .add_plugin(FrameTimeDiagnosticsPlugin::default())
         .add_plugin(movement_plugin::MovementPlugin)
         .add_plugin(ui_plugin::UIPlugin)
         .run();
@@ -47,21 +47,29 @@ fn load_continent_polygons(
     mut materials: ResMut<Assets<ColorMaterial>>,
 ) {
     let mut vandagar_mesh = Mesh::new(PrimitiveTopology::LineStrip);
-    vandagar_mesh.insert_attribute(
-        Mesh::ATTRIBUTE_POSITION,
-        vec![[100.0, 0.0, 100.0], [0.0, 100.0, 100.0]],
-    );
 
-    vandagar_mesh.insert_attribute(Mesh::ATTRIBUTE_COLOR, vec![[0.0, 0.0, 0.0, 1.0]; 2]);
-    vandagar_mesh.insert_attribute(Mesh::ATTRIBUTE_NORMAL, vec![[0.0, 0.0, 1.0]; 2]);
-    vandagar_mesh.insert_attribute(Mesh::ATTRIBUTE_UV_0, vec![[0.0, 1.0]; 2]);
+    let vandagar_vertices = vec![
+        [100.0, 0.0, 100.0],
+        [0.0, 100.0, 100.0],
+        [50.0, 50.0, 100.0],
+        [0.0, 200.0, 100.0],
+    ];
 
-    vandagar_mesh.set_indices(Some(Indices::U32(vec![0, 1])));
+    let vec_lenght = vandagar_vertices.len();
+    vandagar_mesh.insert_attribute(Mesh::ATTRIBUTE_POSITION, vandagar_vertices);
+    vandagar_mesh.insert_attribute(Mesh::ATTRIBUTE_NORMAL, vec![[0.0, 1.0, 0.0]; vec_lenght]);
+    vandagar_mesh.insert_attribute(Mesh::ATTRIBUTE_UV_0, vec![[1.0, 1.0]; vec_lenght]);
+
+    vandagar_mesh.set_indices(Some(Indices::U32(vec![0, 1, 2, 3])));
 
     commands
         .spawn_bundle(MaterialMesh2dBundle {
             mesh: meshes.add(vandagar_mesh).into(),
-            transform: Transform::default(),
+            transform: Transform {
+                translation: Vec3::new(0.0, 0.0, 1.0),
+                scale: Vec3::splat(0.2),
+                ..default()
+            },
             material: materials.add(ColorMaterial::from(Color::PURPLE)),
             ..default()
         })
