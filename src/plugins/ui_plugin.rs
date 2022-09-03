@@ -1,4 +1,4 @@
-use bevy::{prelude::*, ui::FocusPolicy};
+use bevy::prelude::*;
 
 pub struct UIPlugin;
 
@@ -17,11 +17,12 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
     commands.insert_resource(MenuState::default());
     commands
         .spawn_bundle(NodeBundle {
-            color: UiColor(Color::rgba(0., 0., 0., 0.)),
+            color: UiColor(Color::rgba(100., 0., 0., 265.)),
             transform: Transform {
                 translation: Vec3::new(-MAX_MENU_WIDTH, 0.0, 10.0),
                 ..default()
             },
+            global_transform: GlobalTransform::default(),
             style: Style {
                 padding: UiRect::all(Val::Px(1.)),
                 size: Size::new(Val::Px(MAX_MENU_WIDTH), Val::Percent(100.)),
@@ -41,7 +42,6 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
                         Val::Percent(100.),
                     ),
                     size: Size::new(Val::Px(MAX_MENU_WIDTH - MENU_ICON_SIZE), Val::Percent(100.)),
-                    position_type: PositionType::Absolute,
                     ..default()
                 },
                 ..default()
@@ -52,7 +52,7 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
                     align_self: AlignSelf::FlexEnd,
                     ..default()
                 },
-                image: UiImage(asset_server.load("menu/right-arrow.png")),
+                image: UiImage(asset_server.load("menu/right_arrow.png")),
                 ..default()
             });
         })
@@ -98,10 +98,12 @@ fn mark_menu_expand_retract(
 
 fn expand_menu(
     mut commands: Commands,
-    mut q_menu: Query<(Entity, &mut Transform), (With<Menu>, Added<Expand>)>,
+    mut q_menu: Query<(Entity, &mut UiImage, &mut Transform), (With<Menu>, Added<Expand>)>,
+    asset_server: Res<AssetServer>,
 ) {
-    for (menu_entity, mut transform) in q_menu.iter_mut() {
+    for (menu_entity, mut image, mut transform) in q_menu.iter_mut() {
         transform.translation.x = 0.;
+        *image = UiImage(asset_server.load("menu/left_arrow.png"));
         println!("{:?}", transform);
 
         commands.entity(menu_entity).remove::<Expand>();
