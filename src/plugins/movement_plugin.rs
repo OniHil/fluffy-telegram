@@ -6,12 +6,12 @@ pub struct MovementPlugin;
 impl Plugin for MovementPlugin {
     fn build(&self, app: &mut App) {
         app.add_startup_system(setup)
-            .add_system(change_cursor_state)
-            .add_system(transform_cursor)
+            .add_system_to_stage(CoreStage::PreUpdate, change_cursor_state)
+            .add_system_to_stage(CoreStage::PreUpdate, transform_cursor)
             .add_system(mark_moving_status)
-            .add_system(moving)
-            .add_system(still)
-            .add_system(zooming);
+            .add_system(moving.after(mark_moving_status))
+            .add_system_to_stage(CoreStage::Update, zooming)
+            .add_system_to_stage(CoreStage::PostUpdate, still);
     }
 }
 
@@ -110,14 +110,14 @@ fn moving(
     mut q_moving: Query<(Entity, &mut Transform, &GlobalTransform), Added<Moving>>,
     q_cursor: Query<(Entity, &GlobalTransform), With<Cursor>>,
 ) {
-    if let Some((cursor_entity, cursor_transform)) = q_cursor.iter().next() {
-        for (moving_entity, mut transform, global_transform) in q_moving.iter_mut() {
-            let global_pos = global_transform.translation() - cursor_transform.translation();
+    if let Some((cursor_entity, cursor_global)) = q_cursor.iter().next() {
+        for (moving_entity, mut moving_transform, moving_global) in q_moving.iter_mut() {
+            let global_pos = moving_global.translation() - cursor_global.translation();
 
             commands.entity(cursor_entity).add_child(moving_entity);
 
-            transform.translation.x = global_pos.x;
-            transform.translation.y = global_pos.y;
+            moving_transform.translation.x = global_pos.x;
+            moving_transform.translation.y = global_pos.y;
         }
     }
 }
@@ -137,12 +137,37 @@ fn still(
 /// TODO: Find a better way to zoom, do it logrithimcally / exponentially maybe?
 fn zooming(
     mut mouse_wheel_events: EventReader<MouseWheel>,
-    mut query: Query<&mut Transform, With<Zoomable>>,
+    mut q_zoomable: Query<&mut Transform, With<Zoomable>>,
+    cursor_state: Res<CursorState>,
 ) {
-    for mut map in &mut query {
+    for mut zoomable_transform in q_zoomable.iter_mut() {
         for scroll in mouse_wheel_events.iter() {
-            map.scale = Vec3::splat(f32::max(scroll.y as f32 + map.scale.max_element(), 0.5));
-            println!("{:?}", map)
+            let mut scroll_factor = 0.8;
+
+            if scroll.y > 0.0 {
+                scroll_factor = 1. / scroll_factor;
+                zoomable_transform.scale = Vec3::splat(f32::min(
+                    zoomable_transform.scale.max_element() * scroll_factor,
+                    4.,
+                ));
+            } else if scroll.y < 0.0 {
+                zoomable_transform.scale = Vec3::splat(f32::max(
+                    zoomable_transform.scale.max_element() * scroll_factor,
+                    0.2,
+                ));
+            } else {
+                return;
+            }
+
+            let cursor_delta_x =
+                (cursor_state.position.x - zoomable_transform.translation.x) * (scroll_factor - 1.);
+            let cursor_delta_y =
+                (cursor_state.position.y - zoomable_transform.translation.y) * (scroll_factor - 1.);
+
+            zoomable_transform.translation.x = zoomable_transform.translation.x - cursor_delta_x;
+            zoomable_transform.translation.y = zoomable_transform.translation.y - cursor_delta_y;
+
+            println!("zoomable1: {:?}", zoomable_transform);
         }
     }
 }
