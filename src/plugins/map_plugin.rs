@@ -13,12 +13,8 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
         .spawn_bundle(SpriteBundle {
             texture: asset_server.load("map/Map_of_Verra.png"),
             transform: Transform {
-                scale: Vec3::splat(0.5),
-                ..default()
-            },
-            sprite: Sprite {
-                flip_x: false,
-                flip_y: false,
+                translation: Vec3::new(0.0, 0.0, 0.0),
+                scale: Vec3::splat(0.2),
                 ..default()
             },
             ..default()
