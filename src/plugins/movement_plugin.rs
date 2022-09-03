@@ -145,6 +145,7 @@ fn zooming(
             let mut scroll_factor = 0.8;
             let old_scroll = zoomable_transform.scale;
 
+            // First set the new scale
             if scroll.y > 0.0 {
                 scroll_factor = 1. / scroll_factor;
                 zoomable_transform.scale = Vec3::splat(f32::min(
@@ -158,10 +159,12 @@ fn zooming(
                 ));
             }
 
+            // Do nothing if scale wasn't changed
             if old_scroll == zoomable_transform.scale {
                 return;
             }
 
+            // Since we zoom in to where the cursor is, move the zooming entities based on where it is
             let cursor_delta_x =
                 (cursor_state.position.x - zoomable_transform.translation.x) * (scroll_factor - 1.);
             let cursor_delta_y =
@@ -169,8 +172,6 @@ fn zooming(
 
             zoomable_transform.translation.x = zoomable_transform.translation.x - cursor_delta_x;
             zoomable_transform.translation.y = zoomable_transform.translation.y - cursor_delta_y;
-
-            println!("zoomable1: {:?}", zoomable_transform);
         }
     }
 }
