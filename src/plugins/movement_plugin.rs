@@ -143,6 +143,7 @@ fn zooming(
     for mut zoomable_transform in q_zoomable.iter_mut() {
         for scroll in mouse_wheel_events.iter() {
             let mut scroll_factor = 0.8;
+            let old_scroll = zoomable_transform.scale;
 
             if scroll.y > 0.0 {
                 scroll_factor = 1. / scroll_factor;
@@ -155,7 +156,9 @@ fn zooming(
                     zoomable_transform.scale.max_element() * scroll_factor,
                     0.2,
                 ));
-            } else {
+            }
+
+            if old_scroll == zoomable_transform.scale {
                 return;
             }
 
