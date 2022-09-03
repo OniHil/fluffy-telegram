@@ -28,10 +28,10 @@ fn main() {
         })
         .add_plugins(DefaultPlugins)
         .add_startup_system(setup)
+        .add_plugin(map_plugin::MapPlugin)
         .add_startup_system(load_continent_polygons)
         .add_plugin(LogDiagnosticsPlugin::default())
         .add_plugin(FrameTimeDiagnosticsPlugin::default())
-        .add_plugin(map_plugin::MapPlugin)
         .add_plugin(movement_plugin::MovementPlugin)
         .add_plugin(ui_plugin::UIPlugin)
         .run();
@@ -49,12 +49,12 @@ fn load_continent_polygons(
     let mut vandagar_mesh = Mesh::new(PrimitiveTopology::LineStrip);
     vandagar_mesh.insert_attribute(
         Mesh::ATTRIBUTE_POSITION,
-        vec![[100.0, 0.0, 1.0], [0.0, 100.0, 1.0]],
+        vec![[100.0, 0.0, 100.0], [0.0, 100.0, 100.0]],
     );
 
     vandagar_mesh.insert_attribute(Mesh::ATTRIBUTE_COLOR, vec![[0.0, 0.0, 0.0, 1.0]; 2]);
-    vandagar_mesh.insert_attribute(Mesh::ATTRIBUTE_NORMAL, vec![[0.0, 1.0, 0.0]; 2]);
-    vandagar_mesh.insert_attribute(Mesh::ATTRIBUTE_UV_0, vec![[0.0, 0.0]; 2]);
+    vandagar_mesh.insert_attribute(Mesh::ATTRIBUTE_NORMAL, vec![[0.0, 0.0, 1.0]; 2]);
+    vandagar_mesh.insert_attribute(Mesh::ATTRIBUTE_UV_0, vec![[0.0, 1.0]; 2]);
 
     vandagar_mesh.set_indices(Some(Indices::U32(vec![0, 1])));
 
